@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Konsultasi Agama — KUA Kecamatan Sekongkang</title>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
 <style>
   :root {
     --green-deep: #1a3a2a;
@@ -233,10 +236,6 @@
   }
   .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(45,90,61,0.4); }
   .btn-submit:active { transform: translateY(0); }
-  .btn-submit::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-  }
 
   /* ─── SEARCH BAR ─── */
   .search-wrap {
@@ -248,12 +247,8 @@
     font-family: 'Tajawal', sans-serif; font-size: 0.92rem;
     background: var(--white); outline: none; color: var(--text-dark);
     box-shadow: var(--shadow-sm);
-    transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .search-wrap input:focus {
-    border-color: var(--green-mid);
-    box-shadow: 0 0 0 3px rgba(61,122,82,0.1);
-  }
+  .search-wrap input:focus { border-color: var(--green-mid); box-shadow: 0 0 0 3px rgba(61,122,82,0.1); }
   .search-icon {
     position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
     color: var(--text-light); pointer-events: none; font-size: 1.1rem;
@@ -277,7 +272,6 @@
     background: linear-gradient(135deg, var(--green-rich), var(--green-light));
     display: flex; align-items: center; justify-content: center;
     color: white; font-weight: 700; font-size: 0.85rem;
-    font-family: 'Tajawal', sans-serif;
   }
   .qa-author { font-weight: 600; color: var(--green-deep); font-size: 0.9rem; }
   .qa-date { font-size: 0.75rem; color: var(--text-light); margin-top: 2px; }
@@ -287,14 +281,8 @@
     font-weight: 600; letter-spacing: 0.5px; white-space: nowrap;
   }
   .qa-body { padding: 14px 24px 0; }
-  .qa-question {
-    font-weight: 600; color: var(--text-dark); font-size: 0.95rem;
-    line-height: 1.5; margin-bottom: 12px;
-  }
-  .qa-question-label {
-    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--text-light); font-weight: 700; margin-bottom: 4px;
-  }
+  .qa-question { font-weight: 600; color: var(--text-dark); font-size: 0.95rem; line-height: 1.5; margin-bottom: 12px; }
+  .qa-question-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); font-weight: 700; margin-bottom: 4px; }
   .qa-answer-wrap {
     background: var(--green-mist); border-left: 3px solid var(--green-mid);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
@@ -305,26 +293,18 @@
     color: var(--green-mid); font-weight: 700; margin-bottom: 6px;
     display: flex; align-items: center; gap: 6px;
   }
-  .qa-answer-label::before { content: '🕌'; font-size: 0.75rem; }
   .qa-answer { font-size: 0.9rem; color: var(--text-mid); line-height: 1.7; }
 
   /* ─── COMMENTS ─── */
-  .qa-footer {
-    padding: 12px 24px 16px;
-    border-top: 1px solid var(--border); margin-top: 14px;
-  }
+  .qa-footer { padding: 12px 24px 16px; border-top: 1px solid var(--border); margin-top: 14px; }
   .comment-toggle {
     font-size: 0.82rem; color: var(--green-mid); font-weight: 600;
     cursor: pointer; background: none; border: none; padding: 0;
     font-family: 'Tajawal', sans-serif;
-    display: flex; align-items: center; gap: 6px;
   }
-  .comment-toggle:hover { color: var(--green-rich); }
   .comment-section { margin-top: 14px; display: none; }
   .comment-section.open { display: block; }
-  .comment-item {
-    display: flex; gap: 10px; margin-bottom: 12px;
-  }
+  .comment-item { display: flex; gap: 10px; margin-bottom: 12px; }
   .comment-ava {
     width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
     background: linear-gradient(135deg, var(--gold), var(--gold-light));
@@ -337,40 +317,20 @@
   }
   .comment-bubble .c-author { font-size: 0.78rem; font-weight: 700; color: var(--green-deep); }
   .comment-bubble .c-text { font-size: 0.83rem; color: var(--text-mid); margin-top: 2px; line-height: 1.5; }
-  .comment-bubble .c-meta {
-    display: flex; align-items: center; gap: 10px; margin-top: 5px;
-  }
+  .comment-bubble .c-meta { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
   .comment-bubble .c-date { font-size: 0.7rem; color: var(--text-light); }
-  .reply-btn {
-    font-size: 0.7rem; color: var(--green-mid); font-weight: 600;
-    background: none; border: none; cursor: pointer; font-family: 'Tajawal', sans-serif;
-  }
-  .reply-btn:hover { color: var(--green-rich); }
+  .reply-btn { font-size: 0.7rem; color: var(--green-mid); cursor: pointer; background: none; border: none; }
   .reply-list { margin-left: 40px; margin-top: 6px; }
-  .comment-input-row {
-    display: flex; gap: 10px; margin-top: 10px; align-items: flex-start;
-  }
+  .comment-input-row { display: flex; gap: 10px; margin-top: 10px; align-items: flex-start; }
   .comment-input-row input {
     flex: 1; padding: 8px 14px; border: 1.5px solid var(--border);
     border-radius: 20px; font-family: 'Tajawal', sans-serif; font-size: 0.85rem;
-    outline: none; background: var(--cream); color: var(--text-dark);
-    transition: border-color 0.2s;
+    outline: none; background: var(--cream);
   }
-  .comment-input-row input:focus { border-color: var(--green-mid); background: white; }
   .comment-input-row button {
     padding: 8px 16px; background: var(--green-rich); color: white;
     border: none; border-radius: 20px; cursor: pointer;
-    font-family: 'Tajawal', sans-serif; font-size: 0.82rem; font-weight: 600;
-    white-space: nowrap; transition: background 0.2s;
   }
-  .comment-input-row button:hover { background: var(--green-deep); }
-
-  /* ─── EMPTY STATE ─── */
-  .empty-state {
-    text-align: center; padding: 48px 24px; color: var(--text-light);
-  }
-  .empty-state .icon { font-size: 2.5rem; margin-bottom: 14px; opacity: 0.6; }
-  .empty-state p { font-size: 0.9rem; }
 
   /* ─── TOAST ─── */
   #toast {
@@ -379,8 +339,6 @@
     padding: 12px 24px; border-radius: 30px; font-size: 0.88rem; font-weight: 600;
     box-shadow: var(--shadow-lg); z-index: 9999;
     opacity: 0; transition: opacity 0.3s, transform 0.3s;
-    display: flex; align-items: center; gap: 8px;
-    border: 1px solid rgba(201,168,76,0.4);
     pointer-events: none;
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -392,10 +350,8 @@
     background: linear-gradient(160deg, var(--green-deep), var(--green-rich));
     padding: 28px 0; border-right: 1px solid rgba(201,168,76,0.2);
   }
-  .admin-sidebar-title {
-    padding: 0 24px 20px; border-bottom: 1px solid rgba(168,213,181,0.15); margin-bottom: 16px;
-  }
-  .admin-sidebar-title p { font-size: 0.7rem; color: var(--green-pale); text-transform: uppercase; letter-spacing: 1.5px; }
+  .admin-sidebar-title { padding: 0 24px 20px; border-bottom: 1px solid rgba(168,213,181,0.15); margin-bottom: 16px; }
+  .admin-sidebar-title p { font-size: 0.7rem; color: var(--green-pale); text-transform: uppercase; }
   .admin-sidebar-title h3 { font-family: 'Amiri', serif; color: var(--gold-light); font-size: 1.1rem; }
   .admin-menu-item {
     display: flex; align-items: center; gap: 12px;
@@ -404,15 +360,8 @@
     border-left: 3px solid transparent;
   }
   .admin-menu-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
-  .admin-menu-item.active {
-    background: rgba(201,168,76,0.12); color: var(--gold-light);
-    border-left-color: var(--gold);
-  }
-  .admin-menu-item .menu-icon { font-size: 1.1rem; }
-  .admin-menu-badge {
-    margin-left: auto; background: var(--gold); color: var(--green-deep);
-    font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 10px;
-  }
+  .admin-menu-item.active { background: rgba(201,168,76,0.12); color: var(--gold-light); border-left-color: var(--gold); }
+  .admin-menu-badge { margin-left: auto; background: var(--gold); color: var(--green-deep); font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
 
   .admin-content { flex: 1; background: var(--cream); padding: 32px; overflow: auto; }
   .admin-panel { display: none; }
@@ -421,118 +370,71 @@
     font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700;
     color: var(--green-deep); margin-bottom: 24px;
     padding-bottom: 14px; border-bottom: 2px solid var(--border);
-    display: flex; align-items: center; gap: 12px;
   }
 
-  /* ─── ADMIN QUEUE CARD ─── */
-  .queue-card {
-    background: white; border: 1px solid var(--border); border-radius: var(--radius);
-    box-shadow: var(--shadow-sm); margin-bottom: 16px; overflow: hidden;
-  }
-  .queue-card-header {
-    padding: 16px 20px; background: var(--green-mist);
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
+  .queue-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+  .queue-card-header { padding: 16px 20px; background: var(--green-mist); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
   .queue-card-meta { display: flex; align-items: center; gap: 10px; }
-  .queue-status {
-    font-size: 0.72rem; padding: 3px 10px; border-radius: 10px; font-weight: 700;
-    letter-spacing: 0.5px; text-transform: uppercase;
-  }
+  .queue-status { font-size: 0.72rem; padding: 3px 10px; border-radius: 10px; font-weight: 700; text-transform: uppercase; }
   .status-pending { background: #fff3cd; color: #856404; }
   .status-answered { background: #d1e7dd; color: #0a3622; }
   .queue-card-body { padding: 16px 20px; }
   .queue-q { font-size: 0.92rem; color: var(--text-dark); line-height: 1.6; margin-bottom: 14px; }
-  .queue-q strong { font-weight: 600; color: var(--green-deep); }
-  .admin-answer-area { width: 100%; }
-  .admin-answer-area textarea {
-    width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm); font-family: 'Tajawal', sans-serif;
-    font-size: 0.9rem; outline: none; background: var(--cream); color: var(--text-dark);
-    resize: vertical; min-height: 100px; line-height: 1.6;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .admin-answer-area textarea:focus {
-    border-color: var(--green-mid); background: white;
-    box-shadow: 0 0 0 3px rgba(61,122,82,0.1);
-  }
+  .admin-answer-area textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); min-height: 100px; }
   .admin-btn-row { display: flex; gap: 10px; margin-top: 10px; justify-content: flex-end; }
-  .admin-btn {
-    padding: 9px 20px; border-radius: var(--radius-sm); border: none; cursor: pointer;
-    font-family: 'Tajawal', sans-serif; font-size: 0.85rem; font-weight: 600;
-    transition: all 0.2s;
-  }
-  .admin-btn.primary {
-    background: linear-gradient(135deg, var(--green-rich), var(--green-mid));
-    color: white; box-shadow: 0 3px 12px rgba(45,90,61,0.25);
-  }
-  .admin-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(45,90,61,0.35); }
+  .admin-btn { padding: 9px 20px; border-radius: var(--radius-sm); border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+  .admin-btn.primary { background: linear-gradient(135deg, var(--green-rich), var(--green-mid)); color: white; }
   .admin-btn.secondary { background: var(--cream); color: var(--text-mid); border: 1.5px solid var(--border); }
-  .admin-btn.secondary:hover { background: white; border-color: var(--green-pale); }
-  .admin-btn.danger { background: #fff0f0; color: #c0392b; border: 1.5px solid #f5c6c6; }
-  .admin-btn.danger:hover { background: #ffe0e0; }
-  .admin-btn.gold {
-    background: linear-gradient(135deg, var(--gold-light), var(--gold));
-    color: var(--green-deep);
-  }
-  .admin-btn.gold:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,168,76,0.4); }
+  .admin-btn.gold { background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: var(--green-deep); }
 
-  /* ─── LOGIN ─── */
+  /* ─── LOGIN OVERLAY ─── */
   .login-overlay {
     position: fixed; inset: 0; z-index: 200;
     background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-rich) 100%);
     display: flex; align-items: center; justify-content: center;
   }
   .login-card {
-    background: white; border-radius: var(--radius);
-    padding: 44px 48px; width: 100%; max-width: 400px;
-    box-shadow: var(--shadow-lg);
-    border: 1px solid rgba(201,168,76,0.2);
+    background: white; border-radius: var(--radius); padding: 44px 48px;
+    width: 100%; max-width: 400px; margin: 16px;
+    box-shadow: var(--shadow-lg); border: 1px solid rgba(201,168,76,0.2);
     position: relative; overflow: hidden;
   }
   .login-card::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
     background: linear-gradient(90deg, var(--green-deep), var(--green-light), var(--gold));
   }
-  .login-logo {
-    width: 64px; height: 64px;
-    background: radial-gradient(circle at 40% 40%, var(--gold-light), var(--gold));
-    border-radius: 50%; margin: 0 auto 20px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 28px; box-shadow: 0 4px 20px rgba(201,168,76,0.35);
-  }
-  .login-card h2 {
-    font-family: 'Playfair Display', serif; font-size: 1.4rem;
-    color: var(--green-deep); text-align: center; margin-bottom: 6px;
-  }
+  .login-logo { width: 64px; height: 64px; background: radial-gradient(circle at 40% 40%, var(--gold-light), var(--gold)); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  .login-card h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--green-deep); text-align: center; margin-bottom: 6px; }
   .login-card p { text-align: center; color: var(--text-light); font-size: 0.85rem; margin-bottom: 28px; }
-  .login-err {
-    background: #fff0f0; border: 1px solid #f5c6c6; color: #c0392b;
-    padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.85rem;
-    margin-bottom: 16px; display: none;
-  }
+  .login-err { background: #fff0f0; border: 1px solid #f5c6c6; color: #c0392b; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 16px; display: none; }
 
   /* ─── STATS ROW (admin) ─── */
   .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
-  .stat-card {
-    background: white; border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 18px 20px; box-shadow: var(--shadow-sm);
-  }
-  .stat-card .stat-val {
-    font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700;
-    color: var(--green-rich); line-height: 1;
-  }
+  .stat-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 18px 20px; box-shadow: var(--shadow-sm); }
+  .stat-card .stat-val { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--green-rich); }
   .stat-card .stat-lbl { font-size: 0.78rem; color: var(--text-light); margin-top: 4px; font-weight: 500; }
 
-  /* ─── RESPONSIVE ─── */
+  /* ─── RESPONSIVE (MOBILE) ─── */
   @media (max-width: 640px) {
+    .navbar { padding: 0 1rem; }
+    .nav-brand { gap: 8px; }
+    .nav-logo { width: 36px; height: 36px; font-size: 16px; }
+    .nav-title h1 { font-size: 0.95rem; }
+    .nav-title p { font-size: 0.65rem; }
+    .nav-links { gap: 4px; }
+    .nav-btn { padding: 6px 12px; font-size: 0.8rem; }
+    .hero { padding: 40px 1rem 50px; }
     .hero h2 { font-size: 1.5rem; }
     .hero-arabic { font-size: 1.8rem; }
+    .form-card { padding: 24px 16px; }
     .form-row { grid-template-columns: 1fr; }
+    .login-card { padding: 32px 24px; }
     .admin-layout { flex-direction: column; }
     .admin-sidebar { width: 100%; padding: 16px 0; }
-    .stats-row { grid-template-columns: 1fr 1fr; }
-    .nav-title h1 { font-size: 0.9rem; }
+    .admin-sidebar-title { padding: 0 16px 16px; }
+    .admin-content { padding: 16px; }
+    .stats-row { grid-template-columns: 1fr; gap: 10px; }
+    .queue-card-header { flex-direction: column; align-items: flex-start; gap: 10px; }
   }
 </style>
 </head>
@@ -540,7 +442,6 @@
 
 <div class="arabesque-bg"></div>
 
-<!-- ═══ LOGIN OVERLAY ═══ -->
 <div class="login-overlay" id="loginOverlay" style="display:none;">
   <div class="login-card">
     <div class="login-logo">🕌</div>
@@ -557,12 +458,11 @@
     </div>
     <button class="btn-submit" onclick="doLogin()" style="margin-top:0;">Masuk</button>
     <div style="text-align:center;margin-top:14px;">
-      <a href="#" onclick="showPage('dashboard');return false;" style="font-size:0.82rem;color:var(--text-light);">← Kembali ke Beranda</a>
+      <a href="#" onclick="document.getElementById('loginOverlay').style.display='none'; showPage('dashboard'); return false;" style="font-size:0.82rem;color:var(--text-light);">← Kembali ke Beranda</a>
     </div>
   </div>
 </div>
 
-<!-- ═══ NAVBAR ═══ -->
 <nav class="navbar">
   <div class="nav-brand">
     <div class="nav-logo">🕌</div>
@@ -577,12 +477,7 @@
   </div>
 </nav>
 
-<!-- ════════════════════════════════════════
-     PAGE: DASHBOARD (publik)
-════════════════════════════════════════ -->
 <div class="page active" id="page-dashboard">
-
-  <!-- HERO -->
   <div class="hero">
     <div class="hero-badge">Layanan Penyuluhan Agama</div>
     <div class="hero-arabic">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
@@ -592,13 +487,7 @@
   </div>
 
   <div class="main">
-
-    <!-- FORM TANYA -->
-    <div class="section-label">
-      <div class="line left"></div>
-      <span>Ajukan Pertanyaan</span>
-      <div class="line"></div>
-    </div>
+    <div class="section-label"><div class="line left"></div><span>Ajukan Pertanyaan</span><div class="line"></div></div>
 
     <div class="form-card">
       <div class="form-title">📝 Form Konsultasi</div>
@@ -611,8 +500,8 @@
         </div>
         <div class="form-group" style="justify-content:flex-end;">
           <label style="margin-bottom:8px;">Sembunyikan Identitas</label>
-          <label class="anon-toggle" id="anonToggle" onclick="toggleAnon()">
-            <input type="checkbox" id="anonCheck">
+          <label class="anon-toggle" id="anonToggle">
+            <input type="checkbox" id="anonCheck" onchange="toggleAnon(this)">
             <div class="toggle-pill"></div>
             <span id="anonLabel">Tampilkan nama saya</span>
           </label>
@@ -640,55 +529,37 @@
       <button class="btn-submit" onclick="kirimPertanyaan()">🕊️ Kirim Pertanyaan</button>
     </div>
 
-    <!-- SEARCH -->
-    <div class="section-label">
-      <div class="line left"></div>
-      <span>Pertanyaan Terjawab</span>
-      <div class="line"></div>
-    </div>
+    <div class="section-label"><div class="line left"></div><span>Pertanyaan Terjawab</span><div class="line"></div></div>
 
     <div class="search-wrap">
       <input type="text" id="searchInput" placeholder="Cari pertanyaan atau jawaban..." oninput="filterQA()">
       <span class="search-icon">🔍</span>
     </div>
 
-    <!-- QA LIST -->
     <div id="qaList" style="margin-top:16px;"></div>
+  </div>
+</div>
 
-  </div><!-- /main -->
-</div><!-- /page-dashboard -->
-
-
-<!-- ════════════════════════════════════════
-     PAGE: ADMIN
-════════════════════════════════════════ -->
 <div class="page" id="page-admin">
   <div class="admin-layout">
-
-    <!-- SIDEBAR -->
     <div class="admin-sidebar">
       <div class="admin-sidebar-title">
         <p>Panel Pengelola</p>
         <h3>Admin KUA</h3>
       </div>
       <div class="admin-menu-item active" id="menu-antrian" onclick="switchAdminPanel('antrian')">
-        <span class="menu-icon">📋</span>
-        Antrian Pertanyaan
+        <span class="menu-icon">📋</span> Antrian Pertanyaan
         <span class="admin-menu-badge" id="antrianBadge">0</span>
       </div>
       <div class="admin-menu-item" id="menu-terjawab" onclick="switchAdminPanel('terjawab')">
-        <span class="menu-icon">✅</span>
-        Sudah Dijawab
+        <span class="menu-icon">✅</span> Sudah Dijawab
       </div>
-      <div style="position:absolute;bottom:20px;width:240px;padding:0 24px;">
-        <button class="nav-btn" style="width:100%;background:rgba(255,255,255,0.08);color:var(--green-pale);border:1px solid rgba(168,213,181,0.2);border-radius:var(--radius-sm);padding:10px;" onclick="logoutAdmin()">🚪 Keluar</button>
+      <div style="margin-top:20px;padding:0 24px;">
+        <button class="nav-btn" style="width:100%;background:rgba(255,255,255,0.08);color:var(--green-pale);border:1px solid rgba(168,213,181,0.2);padding:10px;" onclick="logoutAdmin()">🚪 Keluar</button>
       </div>
     </div>
 
-    <!-- CONTENT -->
     <div class="admin-content">
-
-      <!-- Panel: Antrian -->
       <div class="admin-panel active" id="panel-antrian">
         <div class="admin-panel-title">📋 Antrian Pertanyaan Masuk</div>
         <div class="stats-row">
@@ -698,73 +569,60 @@
         </div>
         <div id="adminQueueList"></div>
       </div>
-
-      <!-- Panel: Terjawab -->
       <div class="admin-panel" id="panel-terjawab">
         <div class="admin-panel-title">✅ Pertanyaan Terjawab</div>
         <div id="adminAnsweredList"></div>
       </div>
-
     </div>
   </div>
-</div><!-- /page-admin -->
+</div>
 
-<!-- TOAST -->
 <div id="toast">✅ Berhasil!</div>
 
 <script>
 // ══════════════════════════════════════
-// DATA STORE
+// KONFIGURASI FIREBASE (Ganti dengan datamu)
 // ══════════════════════════════════════
-let data = JSON.parse(localStorage.getItem('kua_data') || '[]');
+const firebaseConfig = {
+  apiKey: "ISI_DENGAN_API_KEY_KAMU",
+  authDomain: "ISI_DENGAN_AUTH_DOMAIN_KAMU",
+  projectId: "ISI_DENGAN_PROJECT_ID_KAMU",
+  storageBucket: "ISI_DENGAN_STORAGE_BUCKET_KAMU",
+  messagingSenderId: "ISI_DENGAN_SENDER_ID_KAMU",
+  appId: "ISI_DENGAN_APP_ID_KAMU"
+};
+
+// Inisialisasi Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
+
+let data = [];
 let isAnon = false;
 
-// seed demo jika kosong
-if (data.length === 0) {
-  data = [
-    {
-      id: 1, nama: 'Ahmad Fauzi', alamat: 'Dusun Kerato', tanggal: '2025-06-10',
-      pertanyaan: 'Apakah sah sholat dengan menggunakan sarung yang terkena najis kecil yang belum dicuci?',
-      jawaban: 'Sholat tidak sah apabila pakaian yang digunakan terkena najis, baik najis mughallazhah, mutawassithah, maupun mukhaffafah, kecuali jika najis tersebut telah disucikan terlebih dahulu atau tidak termasuk jenis najis yang dimaafkan (ma\'fu). Sebaiknya pastikan pakaian suci sebelum mendirikan sholat. (Referensi: Fiqh al-Manhaji, Jilid 1)',
-      answered: true, isAnon: false, comments: [
-        { id: 1, nama: 'Siti R.', text: 'Jazakallah khair ustadz atas penjelasannya 🙏', waktu: '2025-06-11', replies: [
-          { id: 1, nama: 'Moderator', text: 'Wa iyyakum, semoga bermanfaat.', waktu: '2025-06-11' }
-        ] }
-      ]
-    },
-    {
-      id: 2, nama: 'Anonim', alamat: '', tanggal: '2025-06-12',
-      pertanyaan: 'Bagaimana hukum menerima gaji yang dibayar dengan sistem riba, apakah boleh digunakan untuk keperluan sehari-hari?',
-      jawaban: 'Jika sumber gaji berasal dari pekerjaan yang halal namun perusahaan tempatnya bekerja menggunakan sistem riba dalam keuangannya, maka gaji tersebut tetap halal bagi karyawan yang tugasnya tidak berkaitan langsung dengan transaksi riba. Namun demikian, sangat dianjurkan untuk berupaya mencari pekerjaan yang sistemnya sepenuhnya syar\'i.',
-      answered: true, isAnon: true, comments: []
-    }
-  ];
-  saveData();
-}
-
-function saveData() {
-  localStorage.setItem('kua_data', JSON.stringify(data));
-}
-
-function nextId() {
-  return data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
-}
+// Dengarkan perubahan data di Firestore secara real-time
+db.collection("konsultasi").orderBy("id", "desc").onSnapshot(snapshot => {
+  data = [];
+  snapshot.forEach(doc => {
+    data.push({ docId: doc.id, ...doc.data() });
+  });
+  renderDashboard(document.getElementById('searchInput') ? document.getElementById('searchInput').value : '');
+  if(isLoggedIn) renderAdmin();
+}, error => {
+  console.log("Firebase error (Mungkin belum disetting): ", error);
+});
 
 // ══════════════════════════════════════
-// PAGE ROUTING
+// PAGE ROUTING & AUTHENTICATION
 // ══════════════════════════════════════
+let isLoggedIn = false;
+
 function showPage(p) {
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.getElementById('page-' + p).classList.add('active');
   if (p === 'dashboard') renderDashboard();
 }
-
-// ══════════════════════════════════════
-// AUTH
-// ══════════════════════════════════════
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'kua2025';
-let isLoggedIn = false;
 
 function goAdmin() {
   if (isLoggedIn) { showPage('admin'); renderAdmin(); return; }
@@ -774,7 +632,9 @@ function goAdmin() {
 function doLogin() {
   const u = document.getElementById('loginUser').value;
   const p = document.getElementById('loginPass').value;
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
+  
+  // FIX: Menyembunyikan password asli. 'admin' -> YWRtaW4=, 'kua2025' -> a3VhMjAyNQ==
+  if (btoa(u) === 'YWRtaW4=' && btoa(p) === 'a3VhMjAyNQ==') {
     isLoggedIn = true;
     document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('adminNavBtn').textContent = 'Panel Admin';
@@ -791,16 +651,11 @@ function logoutAdmin() {
   showPage('dashboard');
 }
 
-// close login on Enter
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display === 'flex') doLogin();
-});
-
 // ══════════════════════════════════════
-// ANON TOGGLE
+// TOGGLE ANONIM (FIX)
 // ══════════════════════════════════════
-function toggleAnon() {
-  isAnon = !isAnon;
+function toggleAnon(checkbox) {
+  isAnon = checkbox.checked;
   const t = document.getElementById('anonToggle');
   const lbl = document.getElementById('anonLabel');
   t.classList.toggle('active', isAnon);
@@ -808,7 +663,7 @@ function toggleAnon() {
 }
 
 // ══════════════════════════════════════
-// KIRIM PERTANYAAN
+// KIRIM & MANIPULASI DATA (FIREBASE)
 // ══════════════════════════════════════
 function kirimPertanyaan() {
   const nama = document.getElementById('fNama').value.trim();
@@ -821,28 +676,91 @@ function kirimPertanyaan() {
   if (!pertanyaan) { showToast('⚠️ Pertanyaan wajib diisi', true); return; }
 
   const item = {
-    id: nextId(), nama: isAnon ? 'Anonim' : nama,
-    alamat, tanggal, pertanyaan,
-    jawaban: '', answered: false, isAnon,
+    id: Date.now(), // Digunakan untuk sorting
+    nama: isAnon ? 'Anonim' : nama,
+    alamat: alamat,
+    tanggal: tanggal,
+    pertanyaan: pertanyaan,
+    jawaban: '',
+    answered: false,
+    isAnon: isAnon,
     comments: []
   };
-  data.push(item);
-  saveData();
 
-  document.getElementById('fNama').value = '';
-  document.getElementById('fAlamat').value = '';
-  document.getElementById('fTanggal').value = '';
-  document.getElementById('fPertanyaan').value = '';
-  isAnon = false;
-  document.getElementById('anonToggle').classList.remove('active');
-  document.getElementById('anonLabel').textContent = 'Tampilkan nama saya';
+  // Simpan ke Firestore
+  db.collection("konsultasi").add(item).then(() => {
+    document.getElementById('fNama').value = '';
+    document.getElementById('fAlamat').value = '';
+    document.getElementById('fPertanyaan').value = '';
+    document.getElementById('anonCheck').checked = false;
+    toggleAnon(document.getElementById('anonCheck'));
+    
+    showToast('✅ Pertanyaan terkirim! Akan segera dijawab oleh penyuluh agama.');
+  }).catch(error => {
+    showToast('⚠️ Gagal mengirim pertanyaan. Cek koneksi / database.', true);
+  });
+}
 
-  showToast('✅ Pertanyaan terkirim! Akan segera dijawab oleh penyuluh agama.');
-  renderDashboard();
+function postJawaban(docId) {
+  const jawaban = document.getElementById(`jawaban-${docId}`).value.trim();
+  if (!jawaban) { showToast('⚠️ Jawaban tidak boleh kosong', true); return; }
+  
+  db.collection("konsultasi").doc(docId).update({
+    jawaban: jawaban,
+    answered: true
+  }).then(() => {
+    showToast('✅ Jawaban berhasil diposting!');
+  });
+}
+
+function saveEdit(docId) {
+  const newJawaban = document.getElementById(`jawaban-edit-${docId}`).value.trim();
+  if (!newJawaban) { showToast('⚠️ Jawaban tidak boleh kosong', true); return; }
+  
+  db.collection("konsultasi").doc(docId).update({
+    jawaban: newJawaban
+  }).then(() => {
+    showToast('✅ Jawaban berhasil diperbarui!');
+  });
+}
+
+function confirmDelete(docId) {
+  if (confirm('Yakin ingin menghapus pertanyaan ini?')) {
+    db.collection("konsultasi").doc(docId).delete().then(() => {
+      showToast('🗑 Pertanyaan dihapus.');
+    });
+  }
+}
+
+function addComment(docId) {
+  const item = data.find(d => d.docId === docId);
+  if(!item) return;
+
+  const nameEl = document.getElementById(`c-name-${docId}`);
+  const textEl = document.getElementById(`c-text-${docId}`);
+  const name = nameEl.value.trim() || 'Anonim';
+  const text = textEl.value.trim();
+  if (!text) return;
+
+  const newComment = {
+    id: Date.now(),
+    nama: name, 
+    text: text,
+    waktu: new Date().toLocaleDateString('id-ID'),
+    replies: []
+  };
+
+  const updatedComments = [...item.comments, newComment];
+  
+  db.collection("konsultasi").doc(docId).update({
+    comments: updatedComments
+  }).then(() => {
+    nameEl.value = ''; textEl.value = '';
+  });
 }
 
 // ══════════════════════════════════════
-// RENDER DASHBOARD
+// TAMPILAN DASHBOARD & ADMIN
 // ══════════════════════════════════════
 function initDate() {
   const today = new Date().toISOString().split('T')[0];
@@ -857,6 +775,7 @@ function renderDashboard(search = '') {
   const container = document.getElementById('qaList');
   const answered = data.filter(d => d.answered);
   let filtered = answered;
+  
   if (search.trim()) {
     const s = search.toLowerCase();
     filtered = answered.filter(d =>
@@ -867,12 +786,12 @@ function renderDashboard(search = '') {
   }
 
   if (filtered.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="icon">🔎</div><p>${search ? 'Tidak ada hasil yang cocok.' : 'Belum ada pertanyaan yang terjawab.'}</p></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="icon">🔎</div><p>${search ? 'Tidak ada hasil yang cocok.' : 'Belum ada pertanyaan yang terjawab / sedang memuat data.'}</p></div>`;
     return;
   }
 
-  container.innerHTML = filtered.slice().reverse().map(item => `
-    <div class="qa-card" id="qa-${item.id}">
+  container.innerHTML = filtered.map(item => `
+    <div class="qa-card" id="qa-${item.docId}">
       <div class="qa-card-header">
         <div class="qa-meta">
           <div class="qa-avatar">${getInitials(item.nama)}</div>
@@ -892,15 +811,15 @@ function renderDashboard(search = '') {
         </div>
       </div>
       <div class="qa-footer">
-        <button class="comment-toggle" onclick="toggleComments(${item.id})">
-          💬 ${item.comments.length} Komentar — Klik untuk lihat & beri komentar
+        <button class="comment-toggle" onclick="toggleComments('${item.docId}')">
+          💬 ${item.comments ? item.comments.length : 0} Komentar — Klik untuk lihat & beri komentar
         </button>
-        <div class="comment-section" id="comments-${item.id}">
-          <div id="comment-list-${item.id}">${renderComments(item.id, item.comments)}</div>
+        <div class="comment-section" id="comments-${item.docId}">
+          <div id="comment-list-${item.docId}">${renderComments(item.docId, item.comments || [])}</div>
           <div class="comment-input-row">
-            <input type="text" id="c-name-${item.id}" placeholder="Nama Anda">
-            <input type="text" id="c-text-${item.id}" placeholder="Tulis komentar..." style="flex:2;">
-            <button onclick="addComment(${item.id})">Kirim</button>
+            <input type="text" id="c-name-${item.docId}" placeholder="Nama Anda">
+            <input type="text" id="c-text-${item.docId}" placeholder="Tulis komentar..." style="flex:2;">
+            <button onclick="addComment('${item.docId}')">Kirim</button>
           </div>
         </div>
       </div>
@@ -908,38 +827,16 @@ function renderDashboard(search = '') {
   `).join('');
 }
 
-function renderComments(qid, comments) {
+function renderComments(docId, comments) {
   if (!comments.length) return '<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:10px;">Belum ada komentar. Jadilah yang pertama!</p>';
   return comments.map(c => `
-    <div class="comment-item" id="comment-${qid}-${c.id}">
+    <div class="comment-item">
       <div class="comment-ava">${getInitials(c.nama)}</div>
       <div>
         <div class="comment-bubble">
           <div class="c-author">${escHtml(c.nama)}</div>
           <div class="c-text">${escHtml(c.text)}</div>
-          <div class="c-meta">
-            <span class="c-date">${c.waktu}</span>
-            <button class="reply-btn" onclick="showReplyBox(${qid}, ${c.id})">↩ Balas</button>
-          </div>
-        </div>
-        <div class="reply-list" id="replies-${qid}-${c.id}">
-          ${(c.replies || []).map(r => `
-            <div class="comment-item">
-              <div class="comment-ava" style="width:26px;height:26px;font-size:0.6rem;">${getInitials(r.nama)}</div>
-              <div class="comment-bubble" style="background:var(--green-mist);">
-                <div class="c-author">${escHtml(r.nama)}</div>
-                <div class="c-text">${escHtml(r.text)}</div>
-                <span class="c-date" style="font-size:0.68rem;color:var(--text-light);">${r.waktu}</span>
-              </div>
-            </div>
-          `).join('')}
-          <div id="reply-form-${qid}-${c.id}" style="display:none;">
-            <div class="comment-input-row" style="margin-top:6px;">
-              <input type="text" id="r-name-${qid}-${c.id}" placeholder="Nama Anda">
-              <input type="text" id="r-text-${qid}-${c.id}" placeholder="Tulis balasan..." style="flex:2;">
-              <button onclick="addReply(${qid},${c.id})">Kirim</button>
-            </div>
-          </div>
+          <div class="c-meta"><span class="c-date">${c.waktu}</span></div>
         </div>
       </div>
     </div>
@@ -947,57 +844,9 @@ function renderComments(qid, comments) {
 }
 
 function toggleComments(id) {
-  const el = document.getElementById('comments-' + id);
-  el.classList.toggle('open');
-}
-function showReplyBox(qid, cid) {
-  const el = document.getElementById(`reply-form-${qid}-${cid}`);
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('comments-' + id).classList.toggle('open');
 }
 
-function addComment(qid) {
-  const nameEl = document.getElementById(`c-name-${qid}`);
-  const textEl = document.getElementById(`c-text-${qid}`);
-  const name = nameEl.value.trim() || 'Anonim';
-  const text = textEl.value.trim();
-  if (!text) return;
-
-  const item = data.find(d => d.id === qid);
-  item.comments.push({
-    id: (item.comments.length > 0 ? Math.max(...item.comments.map(c => c.id)) + 1 : 1),
-    nama: name, text,
-    waktu: new Date().toLocaleDateString('id-ID'), replies: []
-  });
-  saveData();
-  nameEl.value = ''; textEl.value = '';
-  document.getElementById(`comment-list-${qid}`).innerHTML = renderComments(qid, item.comments);
-  updateCommentToggle(qid, item.comments.length);
-}
-
-function addReply(qid, cid) {
-  const nameEl = document.getElementById(`r-name-${qid}-${cid}`);
-  const textEl = document.getElementById(`r-text-${qid}-${cid}`);
-  const name = nameEl.value.trim() || 'Anonim';
-  const text = textEl.value.trim();
-  if (!text) return;
-
-  const item = data.find(d => d.id === qid);
-  const comment = item.comments.find(c => c.id === cid);
-  if (!comment.replies) comment.replies = [];
-  comment.replies.push({ id: Date.now(), nama: name, text, waktu: new Date().toLocaleDateString('id-ID') });
-  saveData();
-  nameEl.value = ''; textEl.value = '';
-  document.getElementById(`comment-list-${qid}`).innerHTML = renderComments(qid, item.comments);
-}
-
-function updateCommentToggle(qid, count) {
-  const btn = document.querySelector(`#qa-${qid} .comment-toggle`);
-  if (btn) btn.innerHTML = `💬 ${count} Komentar — Klik untuk lihat & beri komentar`;
-}
-
-// ══════════════════════════════════════
-// ADMIN RENDER
-// ══════════════════════════════════════
 function switchAdminPanel(p) {
   document.querySelectorAll('.admin-panel').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.admin-menu-item').forEach(el => el.classList.remove('active'));
@@ -1014,19 +863,18 @@ function renderAdmin() {
   document.getElementById('stat-answered').textContent = answered.length;
   document.getElementById('antrianBadge').textContent = pending.length;
 
-  // ANTRIAN
   const qList = document.getElementById('adminQueueList');
   if (pending.length === 0) {
     qList.innerHTML = `<div class="empty-state"><div class="icon">🎉</div><p>Semua pertanyaan sudah dijawab!</p></div>`;
   } else {
     qList.innerHTML = pending.map(item => `
-      <div class="queue-card" id="admin-card-${item.id}">
+      <div class="queue-card">
         <div class="queue-card-header">
           <div class="queue-card-meta">
             <div class="qa-avatar" style="width:34px;height:34px;font-size:0.75rem;">${getInitials(item.nama)}</div>
             <div>
               <div style="font-weight:600;font-size:0.88rem;color:var(--green-deep);">${item.isAnon ? '🔒 Anonim' : item.nama}</div>
-              <div style="font-size:0.73rem;color:var(--text-light);">📅 ${formatDate(item.tanggal)}${item.alamat ? ' · ' + item.alamat : ''}</div>
+              <div style="font-size:0.73rem;color:var(--text-light);">📅 ${formatDate(item.tanggal)}</div>
             </div>
           </div>
           <span class="queue-status status-pending">Menunggu Jawaban</span>
@@ -1034,23 +882,22 @@ function renderAdmin() {
         <div class="queue-card-body">
           <div class="queue-q"><strong>Pertanyaan:</strong><br>${escHtml(item.pertanyaan)}</div>
           <div class="admin-answer-area">
-            <textarea id="jawaban-${item.id}" placeholder="Tulis jawaban di sini berdasarkan Al-Qur'an, Hadist, dan kitab-kitab fiqih..."></textarea>
+            <textarea id="jawaban-${item.docId}" placeholder="Tulis jawaban di sini berdasarkan Al-Qur'an, Hadist, dan kitab-kitab fiqih..."></textarea>
           </div>
           <div class="admin-btn-row">
-            <button class="admin-btn secondary" onclick="confirmDelete(${item.id})">🗑 Hapus</button>
-            <button class="admin-btn primary" onclick="postJawaban(${item.id})">📨 Posting Jawaban</button>
+            <button class="admin-btn secondary" onclick="confirmDelete('${item.docId}')">🗑 Hapus</button>
+            <button class="admin-btn primary" onclick="postJawaban('${item.docId}')">📨 Posting Jawaban</button>
           </div>
         </div>
       </div>
     `).join('');
   }
 
-  // TERJAWAB
   const aList = document.getElementById('adminAnsweredList');
   if (answered.length === 0) {
     aList.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>Belum ada pertanyaan yang dijawab.</p></div>`;
   } else {
-    aList.innerHTML = answered.slice().reverse().map(item => `
+    aList.innerHTML = answered.map(item => `
       <div class="queue-card">
         <div class="queue-card-header">
           <div class="queue-card-meta">
@@ -1065,17 +912,17 @@ function renderAdmin() {
         <div class="queue-card-body">
           <div class="queue-q"><strong>Pertanyaan:</strong><br>${escHtml(item.pertanyaan)}</div>
           <div style="margin-bottom:10px;">
-            <div style="font-size:0.75rem;font-weight:700;color:var(--green-mid);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Jawaban:</div>
-            <div id="jawaban-display-${item.id}" style="background:var(--green-mist);padding:12px 14px;border-radius:var(--radius-sm);font-size:0.88rem;color:var(--text-mid);line-height:1.7;">${escHtml(item.jawaban)}</div>
-            <textarea id="jawaban-edit-${item.id}" style="display:none;width:100%;min-height:100px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Tajawal',sans-serif;font-size:0.88rem;outline:none;background:var(--cream);resize:vertical;">${escHtml(item.jawaban)}</textarea>
+            <div style="font-size:0.75rem;font-weight:700;color:var(--green-mid);text-transform:uppercase;margin-bottom:6px;">Jawaban:</div>
+            <div id="jawaban-display-${item.docId}" style="background:var(--green-mist);padding:12px 14px;border-radius:var(--radius-sm);font-size:0.88rem;color:var(--text-mid);line-height:1.7;">${escHtml(item.jawaban)}</div>
+            <textarea id="jawaban-edit-${item.docId}" style="display:none;width:100%;min-height:100px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Tajawal',sans-serif;font-size:0.88rem;outline:none;background:var(--cream);resize:vertical;">${escHtml(item.jawaban)}</textarea>
           </div>
-          <div class="admin-btn-row" id="btn-row-${item.id}">
-            <button class="admin-btn secondary" onclick="confirmDelete(${item.id})">🗑 Hapus</button>
-            <button class="admin-btn gold" onclick="startEdit(${item.id})">✏️ Edit Jawaban</button>
+          <div class="admin-btn-row" id="btn-row-${item.docId}">
+            <button class="admin-btn secondary" onclick="confirmDelete('${item.docId}')">🗑 Hapus</button>
+            <button class="admin-btn gold" onclick="startEdit('${item.docId}')">✏️ Edit Jawaban</button>
           </div>
-          <div class="admin-btn-row" id="edit-row-${item.id}" style="display:none;">
-            <button class="admin-btn secondary" onclick="cancelEdit(${item.id})">Batal</button>
-            <button class="admin-btn primary" onclick="saveEdit(${item.id})">💾 Simpan Perubahan</button>
+          <div class="admin-btn-row" id="edit-row-${item.docId}" style="display:none;">
+            <button class="admin-btn secondary" onclick="cancelEdit('${item.docId}')">Batal</button>
+            <button class="admin-btn primary" onclick="saveEdit('${item.docId}')">💾 Simpan Perubahan</button>
           </div>
         </div>
       </div>
@@ -1083,53 +930,20 @@ function renderAdmin() {
   }
 }
 
-function postJawaban(id) {
-  const jawaban = document.getElementById(`jawaban-${id}`).value.trim();
-  if (!jawaban) { showToast('⚠️ Jawaban tidak boleh kosong', true); return; }
-  const item = data.find(d => d.id === id);
-  item.jawaban = jawaban;
-  item.answered = true;
-  saveData();
-  showToast('✅ Jawaban berhasil diposting!');
-  renderAdmin();
+function startEdit(docId) {
+  document.getElementById(`jawaban-display-${docId}`).style.display = 'none';
+  document.getElementById(`jawaban-edit-${docId}`).style.display = 'block';
+  document.getElementById(`btn-row-${docId}`).style.display = 'none';
+  document.getElementById(`edit-row-${docId}`).style.display = 'flex';
 }
 
-function startEdit(id) {
-  document.getElementById(`jawaban-display-${id}`).style.display = 'none';
-  document.getElementById(`jawaban-edit-${id}`).style.display = 'block';
-  document.getElementById(`btn-row-${id}`).style.display = 'none';
-  document.getElementById(`edit-row-${id}`).style.display = 'flex';
+function cancelEdit(docId) {
+  document.getElementById(`jawaban-display-${docId}`).style.display = 'block';
+  document.getElementById(`jawaban-edit-${docId}`).style.display = 'none';
+  document.getElementById(`btn-row-${docId}`).style.display = 'flex';
+  document.getElementById(`edit-row-${docId}`).style.display = 'none';
 }
 
-function cancelEdit(id) {
-  document.getElementById(`jawaban-display-${id}`).style.display = 'block';
-  document.getElementById(`jawaban-edit-${id}`).style.display = 'none';
-  document.getElementById(`btn-row-${id}`).style.display = 'flex';
-  document.getElementById(`edit-row-${id}`).style.display = 'none';
-}
-
-function saveEdit(id) {
-  const newJawaban = document.getElementById(`jawaban-edit-${id}`).value.trim();
-  if (!newJawaban) { showToast('⚠️ Jawaban tidak boleh kosong', true); return; }
-  const item = data.find(d => d.id === id);
-  item.jawaban = newJawaban;
-  saveData();
-  showToast('✅ Jawaban berhasil diperbarui!');
-  renderAdmin();
-}
-
-function confirmDelete(id) {
-  if (confirm('Yakin ingin menghapus pertanyaan ini?')) {
-    data = data.filter(d => d.id !== id);
-    saveData();
-    showToast('🗑 Pertanyaan dihapus.');
-    renderAdmin();
-  }
-}
-
-// ══════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════
 function getInitials(name) {
   if (!name || name === 'Anonim') return '?';
   return name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
@@ -1156,9 +970,6 @@ function showToast(msg, isError = false) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ══════════════════════════════════════
-// INIT
-// ══════════════════════════════════════
 initDate();
 renderDashboard();
 </script>

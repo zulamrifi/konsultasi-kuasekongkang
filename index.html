@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;700&family=Tajawal:wght@300;400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
 <style>
   :root {
@@ -650,25 +651,37 @@ function goAdmin() {
 }
 
 function doLogin() {
-  const u = document.getElementById('loginUser').value;
+  const email = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value;
   
-  // FIX: Menyembunyikan password asli. 'admin' -> YWRtaW4=, 'kua2025' -> a3VhMjAyNQ==
-  if (btoa(u) === 'YWRtaW4=' && btoa(p) === 'a3VhMjAyNQ==') {
-    isLoggedIn = true;
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('adminNavBtn').textContent = 'Panel Admin';
-    showPage('admin');
-    renderAdmin();
-  } else {
-    document.getElementById('loginErr').style.display = 'block';
-  }
+  // Menggunakan Firebase Authentication
+  firebase.auth().signInWithEmailAndPassword(email, p)
+    .then((userCredential) => {
+      // Jika berhasil login
+      isLoggedIn = true;
+      document.getElementById('loginOverlay').style.display = 'none';
+      document.getElementById('adminNavBtn').textContent = 'Panel Admin';
+      document.getElementById('loginErr').style.display = 'none';
+      document.getElementById('loginUser').value = '';
+      document.getElementById('loginPass').value = '';
+      showPage('admin');
+      renderAdmin();
+    })
+    .catch((error) => {
+      // Jika email atau password salah
+      document.getElementById('loginErr').textContent = "Email atau password salah!";
+      document.getElementById('loginErr').style.display = 'block';
+    });
 }
 
 function logoutAdmin() {
-  isLoggedIn = false;
-  document.getElementById('adminNavBtn').textContent = 'Admin';
-  showPage('dashboard');
+  firebase.auth().signOut().then(() => {
+    isLoggedIn = false;
+    document.getElementById('adminNavBtn').textContent = 'Admin';
+    showPage('dashboard');
+  }).catch((error) => {
+    console.error("Gagal logout:", error);
+  });
 }
 
 // ══════════════════════════════════════

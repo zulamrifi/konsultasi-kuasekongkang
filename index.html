@@ -716,11 +716,13 @@ function kirimPertanyaan() {
     toggleAnon(document.getElementById('anonCheck'));
     
     showToast('✅ Pertanyaan terkirim! Akan segera dijawab oleh penyuluh agama.');
+    // --- PANGGIL NOTIFIKASI DI SINI ---
+    kirimNotifTelegram(item.nama, item.pertanyaan);
   }).catch(error => {
     showToast('⚠️ Gagal mengirim pertanyaan. Cek koneksi / database.', true);
   });
 }
-
+  
 function postJawaban(docId) {
   const jawaban = document.getElementById(`jawaban-${docId}`).value.trim();
   if (!jawaban) { showToast('⚠️ Jawaban tidak boleh kosong', true); return; }
@@ -782,6 +784,34 @@ function addComment(docId) {
 // ══════════════════════════════════════
 // TAMPILAN DASHBOARD & ADMIN
 // ══════════════════════════════════════
+function kirimNotifTelegram(nama, pertanyaan) {
+  // Ganti dengan data bot kamu
+  const botToken = "ISI_DENGAN_TOKEN_DARI_BOTFATHER";
+  const chatId = "ISI_DENGAN_CHAT_ID"; 
+  
+  const pesan = `🕌 *PERTANYAAN BARU MASUK*\n\n*Dari:* ${nama}\n*Isi Pertanyaan:*\n${pertanyaan}\n\n_Segera cek Panel Admin KUA untuk menjawab._`;
+
+  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: pesan,
+      parse_mode: 'Markdown' // Mengizinkan teks tebal/miring
+    })
+  })
+  .then(response => {
+    if (!response.ok) console.error("Gagal mengirim notifikasi Telegram");
+  })
+  .catch(error => {
+    console.error("Error Telegram API:", error);
+  });
+}
+  
 function initDate() {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('fTanggal').value = today;

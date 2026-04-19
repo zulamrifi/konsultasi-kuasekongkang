@@ -786,12 +786,12 @@ function addComment(docId) {
 // ══════════════════════════════════════
 function kirimNotifTelegram(nama, pertanyaan) {
   // Ganti dengan data bot kamu
-  const botToken = "ISI_DENGAN_TOKEN_DARI_BOTFATHER";
-  const chatId = "ISI_DENGAN_CHAT_ID"; 
+  const botToken = "8341523681:AAFJc-3TaJ8HM452RT_Rb257EQowfQ01G54";
+  const chatId = "-5267557192"; 
   
   const pesan = `🕌 *PERTANYAAN BARU MASUK*\n\n*Dari:* ${nama}\n*Isi Pertanyaan:*\n${pertanyaan}\n\n_Segera cek Panel Admin KUA untuk menjawab._`;
 
-  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+  const url = `https://api.telegram.org/bot${8341523681:AAFJc-3TaJ8HM452RT_Rb257EQowfQ01G54}/sendMessage`;
 
   fetch(url, {
     method: 'POST',

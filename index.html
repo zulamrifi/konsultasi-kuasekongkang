@@ -934,7 +934,7 @@ function renderAdmin() {
           <div style="margin-bottom:10px;">
             <div style="font-size:0.75rem;font-weight:700;color:var(--green-mid);text-transform:uppercase;margin-bottom:6px;">Jawaban:</div>
             <div id="jawaban-display-${item.docId}" style="background:var(--green-mist);padding:12px 14px;border-radius:var(--radius-sm);font-size:0.88rem;color:var(--text-mid);line-height:1.7;">${escHtml(item.jawaban)}</div>
-            <textarea id="jawaban-edit-${item.docId}" style="display:none;width:100%;min-height:100px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Tajawal',sans-serif;font-size:0.88rem;outline:none;background:var(--cream);resize:vertical;">${escHtml(item.jawaban)}</textarea>
+            <textarea id="jawaban-edit-${item.docId}" style="display:none;width:100%;min-height:100px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Tajawal',sans-serif;font-size:0.88rem;outline:none;background:var(--cream);resize:vertical;">${forInput(item.jawaban)}</textarea>
           </div>
           <div class="admin-btn-row" id="btn-row-${item.docId}">
             <button class="admin-btn secondary" onclick="confirmDelete('${item.docId}')">🗑 Hapus</button>
@@ -976,6 +976,16 @@ function formatDate(d) {
   return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
 }
 
+  function forInput(s) {
+  if (!s) return '';
+  // Hanya mengamankan karakter HTML dasar agar tidak merusak struktur kode,
+  // TANPA mengubah baris baru menjadi <br> dan tanpa memproses tag [arab].
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+  
 function escHtml(s) {
   // 1. Mengubah karakter bahaya menjadi aman (mencegah bug/hack)
   let text = String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');

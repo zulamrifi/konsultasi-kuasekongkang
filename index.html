@@ -716,11 +716,11 @@ function kirimPertanyaan() {
     toggleAnon(document.getElementById('anonCheck'));
     
     showToast('✅ Pertanyaan terkirim! Akan segera dijawab oleh penyuluh agama.');
-    // --- PANGGIL NOTIFIKASI DI SINI ---
-    kirimNotifTelegram(item.nama, item.pertanyaan);
   }).catch(error => {
     showToast('⚠️ Gagal mengirim pertanyaan. Cek koneksi / database.', true);
   });
+  // --- PANGGIL NOTIFIKASI DI SINI ---
+    kirimNotifTelegram(item.nama, item.pertanyaan);
 }
   
 function postJawaban(docId) {
@@ -998,15 +998,6 @@ function escHtml(s) {
   return text;
 }
 
-let toastTimer;
-function showToast(msg, isError = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = isError ? '#c0392b' : 'var(--green-deep)';
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
-}
 function kirimNotifTelegram(nama, pertanyaan) {
   // Ganti dengan data bot kamu
   const botToken = "8341523681:AAFJc-3TaJ8HM452RT_Rb257EQowfQ01G54";
@@ -1033,6 +1024,16 @@ function kirimNotifTelegram(nama, pertanyaan) {
   .catch(error => {
     console.error("Error Telegram API:", error);
   });
+}
+  
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? '#c0392b' : 'var(--green-deep)';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
   
 initDate();

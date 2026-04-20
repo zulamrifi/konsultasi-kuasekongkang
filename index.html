@@ -578,12 +578,11 @@
       <div class="admin-menu-item" id="menu-pengaturan" onclick="switchAdminPanel('pengaturan')">
         <span class="menu-icon">⚙️</span> Pengaturan Website
       </div>
+      
       <div style="margin-top:20px;padding:0 24px;">
         <button class="nav-btn" style="width:100%;background:rgba(255,255,255,0.08);color:var(--green-pale);border:1px solid rgba(168,213,181,0.2);padding:10px;" onclick="logoutAdmin()">🚪 Keluar</button>
       </div>
-    </div>
-    
-    <div class="admin-content">
+    </div> <div class="admin-content">
       <div class="admin-panel active" id="panel-antrian">
         <div class="admin-panel-title">📋 Antrian Pertanyaan Masuk</div>
         <div class="stats-row">
@@ -593,13 +592,13 @@
         </div>
         <div id="adminQueueList"></div>
       </div>
+      
       <div class="admin-panel" id="panel-terjawab">
         <div class="admin-panel-title">✅ Pertanyaan Terjawab</div>
         <div id="adminAnsweredList"></div>
       </div>
-    </div>
-  </div>
-  <div class="admin-panel" id="panel-pengaturan">
+      
+      <div class="admin-panel" id="panel-pengaturan">
         <div class="admin-panel-title">⚙️ Pengaturan Website</div>
         <div class="form-card">
           <div class="form-group" style="margin-bottom:14px;">
@@ -621,14 +620,13 @@
           <button class="btn-submit" onclick="saveWebSettings()">💾 Simpan Pengaturan</button>
         </div>
       </div>
-</div>
-  
-<footer style="background:var(--green-deep); color:var(--green-pale); padding:30px 2rem; text-align:center; font-size:0.85rem;">
+      
+    </div> </div> </div> <footer style="background:var(--green-deep); color:var(--green-pale); padding:30px 2rem; text-align:center; font-size:0.85rem;">
   <p id="dyn-footer">© 2026 KUA Kecamatan Sekongkang. Seluruh Hak Cipta Dilindungi.</p>
 </footer>
   
 <div id="toast">✅ Berhasil!</div>
-
+  
 <script>
 // ══════════════════════════════════════
 // KONFIGURASI FIREBASE (Ganti dengan datamu)

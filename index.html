@@ -488,9 +488,9 @@
   <div class="nav-brand">
     <div class="nav-logo">🕌</div>
     <div class="nav-title">
-      <h1>Konsultasi Agama Islam</h1>
-      <p>KUA Kecamatan Sekongkang</p>
-    </div>
+      <h1 id="dyn-header">Konsultasi Agama Islam</h1>
+      <p id="dyn-office-nav">KUA Kecamatan Sekongkang</p>
+  </div>
   </div>
   <div class="nav-links">
     <button class="nav-btn ghost" onclick="showPage('dashboard')">Beranda</button>
@@ -500,11 +500,11 @@
 
 <div class="page active" id="page-dashboard">
   <div class="hero">
-    <div class="hero-badge">Layanan Penyuluhan Agama</div>
+    <div class="hero-badge" id="dyn-office-hero">Layanan Penyuluhan Agama</div>
     <div class="hero-arabic">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
     <div class="hero-divider"></div>
     <h2>Tanya & Konsultasi Keagamaan</h2>
-    <p>Sampaikan pertanyaan Anda seputar ibadah, muamalah, dan kehidupan rumah tangga ataupun beragama. Penyuluh Agama kami siap membantu dengan jawaban yang berlandaskan Al-Qur'an, Sunnah, Ijma', dan Qiyas Ulama'.</p>
+    <p id="dyn-tagline">Sampaikan pertanyaan Anda seputar ibadah, muamalah, dan kehidupan beragama. Penyuluh agama kami siap membantu dengan jawaban yang berlandaskan Al-Qur'an dan Sunnah.</p>
   </div>
 
   <div class="main">
@@ -574,6 +574,9 @@
       </div>
       <div class="admin-menu-item" id="menu-terjawab" onclick="switchAdminPanel('terjawab')">
         <span class="menu-icon">✅</span> Sudah Dijawab
+      <div class="admin-menu-item" id="menu-pengaturan" onclick="switchAdminPanel('pengaturan')">
+      <span class="menu-icon">⚙️</span> Pengaturan Website
+      </div>
       </div>
       <div style="margin-top:20px;padding:0 24px;">
         <button class="nav-btn" style="width:100%;background:rgba(255,255,255,0.08);color:var(--green-pale);border:1px solid rgba(168,213,181,0.2);padding:10px;" onclick="logoutAdmin()">🚪 Keluar</button>
@@ -596,8 +599,34 @@
       </div>
     </div>
   </div>
+  <div class="admin-panel" id="panel-pengaturan">
+        <div class="admin-panel-title">⚙️ Pengaturan Website</div>
+        <div class="form-card">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Judul Header (Navbar)</label>
+            <input type="text" id="set-header" class="form-control" placeholder="Contoh: Konsultasi Agama Islam">
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Nama Kantor / Instansi</label>
+            <input type="text" id="set-office" class="form-control" placeholder="Contoh: KUA Kecamatan Sekongkang">
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Tagline (Deskripsi Beranda)</label>
+            <textarea id="set-tagline" class="form-control" style="min-height:80px;" placeholder="Masukkan deskripsi sambutan..."></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:20px;">
+            <label>Teks Footer</label>
+            <input type="text" id="set-footer" class="form-control" placeholder="Contoh: © 2026 KUA Kecamatan...">
+          </div>
+          <button class="btn-submit" onclick="saveWebSettings()">💾 Simpan Pengaturan</button>
+        </div>
+      </div>
 </div>
-
+  
+<footer style="background:var(--green-deep); color:var(--green-pale); padding:30px 2rem; text-align:center; font-size:0.85rem;">
+  <p id="dyn-footer">© 2026 KUA Kecamatan Sekongkang. Seluruh Hak Cipta Dilindungi.</p>
+</footer>
+  
 <div id="toast">✅ Berhasil!</div>
 
 <script>
@@ -621,6 +650,7 @@ const db = firebase.firestore();
 
 let data = [];
 let isAnon = false;
+let webConfig = {};
 
 // Dengarkan perubahan data di Firestore secara real-time
 db.collection("konsultasi").orderBy("id", "desc").onSnapshot(snapshot => {
@@ -1047,6 +1077,48 @@ function showToast(msg, isError = false) {
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+  // --- FITUR PENGATURAN WEBSITE ---
+// 1. Tarik data pengaturan secara real-time dari Firebase
+db.collection("pengaturan").doc("webConfig").onSnapshot((doc) => {
+  if (doc.exists) {
+    webConfig = doc.data();
+    applyWebSettings();
+  }
+});
+
+// 2. Terapkan data ke HTML
+function applyWebSettings() {
+  // Ganti teks di halaman publik
+  if (webConfig.header) document.getElementById('dyn-header').textContent = webConfig.header;
+  if (webConfig.office) {
+    document.getElementById('dyn-office-nav').textContent = webConfig.office;
+    document.getElementById('dyn-office-hero').textContent = webConfig.office;
+  }
+  if (webConfig.tagline) document.getElementById('dyn-tagline').textContent = webConfig.tagline;
+  if (webConfig.footer) document.getElementById('dyn-footer').textContent = webConfig.footer;
+  
+  // Isi juga ke form di panel admin agar tidak kosong
+  if(document.getElementById('set-header')) {
+    document.getElementById('set-header').value = webConfig.header || '';
+    document.getElementById('set-office').value = webConfig.office || '';
+    document.getElementById('set-tagline').value = webConfig.tagline || '';
+    document.getElementById('set-footer').value = webConfig.footer || '';
+  }
+}
+
+// 3. Simpan data baru ke Firebase
+function saveWebSettings() {
+  const newConfig = {
+    header: document.getElementById('set-header').value.trim(),
+    office: document.getElementById('set-office').value.trim(),
+    tagline: document.getElementById('set-tagline').value.trim(),
+    footer: document.getElementById('set-footer').value.trim()
+  };
+
+  db.collection("pengaturan").doc("webConfig").set(newConfig)
+    .then(() => showToast('✅ Pengaturan berhasil diperbarui!'))
+    .catch(error => showToast('⚠️ Gagal menyimpan pengaturan', true));
 }
   
 initDate();
